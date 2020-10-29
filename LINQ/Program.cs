@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 using System.Linq;
 
@@ -143,6 +144,7 @@ namespace LINQ
 
             Print2("FIRST: EXISTEM MAIS DO QUE 1 PRODUTO, mas usei o FIRST: ", r9);
 
+            /*
             //UMA COLECAO IEnumerable
             IEnumerable<Product> r10 = products
                       .Where(
@@ -150,6 +152,96 @@ namespace LINQ
                              );
 
             Print("SINGLE: EXISTEM MAIS DO QUE 1 PRODUTO, agora nao usei o single: ", r10);
+            */
+
+            //se eu deixar sem a expressão lambada eu teria que implementar o IComparable, senão dá uma exceção
+            double r10 = products
+                            .Max(
+                                    p => p.Price
+
+                                    );
+
+            Print2("PRICE: Preço máximo: ", r10);
+
+            double r11 = products
+                            .Min(
+                                    p => p.Price
+
+                                    );
+
+            Print2("PRICE: Preço mínimo: ", r11);
+
+            double r12 = products
+                             .Where(p => p.Category.Id == 1)
+                             .Sum(p => p.Price);
+
+
+            Print2("ID DA CATEGORIA 1: SOMA ", r12);
+
+            double r13 = products
+                             .Where(p => p.Category.Id == 1)
+                             .Average(p => p.Price);
+
+
+            Print2("ID DA CATEGORIA 1: média dos preços ", r13);
+
+            //Aqui é um macete para não retornar uma colecao vazia que nao existe ID 5 nao tem
+            //Usando antes o select com a expressao lambda do filtro que iria para o average
+            //e depois usa-se o DEFAULTIFEMPTY! e daí somente chama-se o avarage!
+            var r14 = products
+                            .Where(p => p.Category.Id == 5)
+                            .Select(p => p.Price)
+                            .DefaultIfEmpty(0.0)
+                            .Average()
+                            ;
+
+            Print2("ID DA CATEGORIA 15 NAO EXISTE: média dos preços - COLEÇÃO VAZIA ", r14.ToString("C", new CultureInfo("pt-BR")));
+
+
+            //fazendo minha própria operação
+            //usando uma funcao anonima!
+            //É uma função que recebe x e y (x, y
+            //e faz a operacao que quero agregar... somando o x e y ... 
+
+            double r15 = products
+                            .Where(p => p.Category.Id == 1)
+                            .Select(p => p.Price)
+                            .Aggregate(
+                                        (x, y) => x + y
+                            );
+
+            Print2("CATEGORIA AGREGATE SUM ", r15.ToString("C", new CultureInfo("pt-BR")));
+
+            //Com resultado vazio... passo um valor padrao inicial como 0.00
+            double r16 = products
+                            .Where(p => p.Category.Id == 5)
+                            .Select(p => p.Price)
+                            .Aggregate(
+                                        0.0, (x, y) => x + y
+                            );
+
+            Print2("CATEGORIA AGREGATE SUM QUE RETORNARIA VAZIO PQ ID 5 NAO TEM", r16.ToString("C", new CultureInfo("pt-BR")));
+
+
+            //POR CATEGORIA
+            var r17 = products
+                            .GroupBy(
+                                p => p.Category
+                            );
+
+            foreach(IGrouping<Category,Product> group in r17)
+            {
+                Console.WriteLine("Categoria: " + group.Key.Name);
+
+                foreach(Product p in group)
+                {
+                    Console.WriteLine(p);
+                    //Console.WriteLine("Produto: " + p.Name );
+
+                }
+
+                Console.WriteLine();
+            }
 
         }
 
@@ -167,13 +259,22 @@ namespace LINQ
 
         }
 
-        static void Print2(string message, Product product)
+        //Era do tipo Products, mas agora estou passando tanto products quanto um tipo double
+        static void Print2<T>(string message, T product)
         {
             Console.WriteLine();
-            Console.WriteLine(message + " " + product);
+
+            
+                Console.WriteLine(
+                        message
+                        + " "
+                        + product );
+       
             Console.WriteLine();
 
 
         }
+
+         
     }
 }
